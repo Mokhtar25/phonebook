@@ -7,7 +7,6 @@ const app = express();
 app.use(express.static("dist"));
 
 const Note = require("./mongo");
-console.log("note", Note);
 
 const requestLogger = (request, response, next) => {
   console.log("Method:", request.method);
@@ -35,6 +34,11 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
 };
 
+// to get them as json
+// Note.find({ content: { $eq: "typescript" } }).then((e) =>
+//   console.log(e[0].toJSON()),
+// );
+//
 app.get("/api/notes", (req, res) => {
   Note.find().then((e) => res.json(e));
 });
