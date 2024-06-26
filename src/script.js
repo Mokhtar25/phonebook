@@ -25,11 +25,9 @@ app.use(express.json());
 app.use(requestLogger);
 const errorHandler = (error, request, response, next) => {
   console.error(error.message);
-
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
   }
-
   next(error);
 };
 
@@ -44,7 +42,7 @@ app.get("/api/notes", (req, res) => {
 // Note.deleteMany({ content: { $eq: "" } }).then((re) =>
 //   console.log("detlet", re),
 // );
-app.post("/api/notes", (req, res) => {
+app.post("/api/notes", async (req, res) => {
   const data = req.body;
 
   if (!data.content) {
@@ -52,6 +50,11 @@ app.post("/api/notes", (req, res) => {
 
     return res.status(400).json({ error: "content missing" });
   }
+
+  const z = await Note.find({ content: data.content });
+  console.log(z);
+
+  if (z.length !== 0) return res.status(409).end();
 
   const note = new Note({
     important: data.important || false,

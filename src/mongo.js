@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 
 require("dotenv").config();
 
-console.log("from note ", process.env.MONGODB_URL);
 mongoose.set("strictQuery", false);
 
 const url = process.env.MONGODB_URL;
