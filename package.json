@@ -6,7 +6,7 @@
     "start": "node src/script.js",
     "dev": "nodemon script/script.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:ui": "rm -rf dist && cd ../frontend/ && npm run build && mv dist ../",
+    "build:ui": "rm -rf dist && cd ../frontend/ && npm run build && mv dist ../phonebook",
     "deploy": "git push origin main",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push && npm run deploy",
     "test": "echo \"Error: no test specified\" && exit 1"
