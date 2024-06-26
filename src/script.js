@@ -23,9 +23,13 @@ app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
 const errorHandler = (error, request, response, next) => {
-  console.error(error.message);
+  console.error(error);
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
+  } else if (error.name === "Conflict") {
+    return response.status(409).json({ error: error.message });
   }
   next(error);
 };
@@ -46,7 +50,7 @@ app.get("/api/notes", (req, res) => {
 // Note.deleteMany({ content: { $eq: "" } }).then((re) =>
 //   console.log("detlet", re),
 // );
-app.post("/api/notes", async (req, res) => {
+app.post("/api/notes", async (req, res, next) => {
   const data = req.body;
 
   if (!data.content) {
@@ -56,16 +60,23 @@ app.post("/api/notes", async (req, res) => {
   }
 
   const z = await Note.find({ content: data.content });
-  console.log(z);
 
-  if (z.length !== 0) return res.status(409).end();
+  if (z.length !== 0) {
+    const err = new Error("The note is already in the database");
+    err.name = "Conflict";
+    err.status = 409;
+    return next(err);
+  }
 
   const note = new Note({
     important: data.important || false,
     content: data.content,
   });
 
-  note.save().then((sav) => res.json(sav));
+  note
+    .save()
+    .then((sav) => res.json(sav))
+    .catch((err) => next(err));
 });
 
 app.get("/api/notes/:id", (req, res, next) => {
@@ -81,18 +92,13 @@ app.delete("/api/notes/:id", (req, res, next) => {
 });
 
 app.put("/api/notes/:id", (req, res, next) => {
-  const body = req.body;
+  const { content, important } = req.body;
 
-  if (!body.content) {
-    return res.status(400).json({ error: "missing content" });
-  }
-
-  const note = {
-    content: body.content,
-    important: body.important,
-  };
-
-  Note.findByIdAndUpdate(req.params.id, note, { new: true })
+  Note.findByIdAndUpdate(
+    req.params.id,
+    { content, important },
+    { new: true, runValidators: true, context: "query" },
+  )
     .then((up) => res.json(up))
     .catch((err) => next(err));
 });
