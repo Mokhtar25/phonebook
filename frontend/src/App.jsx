@@ -9,13 +9,17 @@ const App = () => {
   const [newNote, setNewNote] = useState("");
   const [showAll, setShowAll] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [dele, setDele] = useState(0);
 
   useEffect(() => {
     noteService.getAll().then((initialNotes) => {
       setNotes(initialNotes);
     });
-  }, []);
+  }, [dele]);
 
+  const del = (id) => {
+    noteService.del(id).then((w) => setDele(() => dele + 1));
+  };
   const addNote = (event) => {
     event.preventDefault();
     const noteObject = {
@@ -66,6 +70,7 @@ const App = () => {
       <ul>
         {notesToShow.map((note) => (
           <Note
+            del={del}
             key={note.id}
             note={note}
             toggleImportance={() => toggleImportanceOf(note.id)}
@@ -82,4 +87,3 @@ const App = () => {
 };
 
 export default App;
-

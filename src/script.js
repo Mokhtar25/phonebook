@@ -42,14 +42,16 @@ app.get("/api/notes", (req, res) => {
   Note.find().then((e) => res.json(e));
 });
 
+// Note.deleteMany({ content: { $eq: "" } }).then((re) =>
+//   console.log("detlet", re),
+// );
 app.post("/api/notes", (req, res) => {
   const data = req.body;
-  console.log(data);
 
   if (!data.content) {
     console.log("error");
 
-    res.status(400).json({ error: "content missing" });
+    return res.status(400).json({ error: "content missing" });
   }
 
   const note = new Note({
@@ -74,7 +76,6 @@ app.delete("/api/notes/:id", (req, res, next) => {
 
 app.put("/api/notes/:id", (req, res, next) => {
   const body = req.body;
-  console.log(body);
 
   if (!body.content) {
     return res.status(400).json({ error: "missing content" });
