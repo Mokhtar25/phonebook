@@ -6,7 +6,7 @@ const app = express();
 
 app.use(express.static("dist"));
 
-const Note = require("./mongo");
+const Phone = require("./mongo");
 
 const requestLogger = (request, response, next) => {
   console.log("Method:", request.method);
@@ -39,64 +39,65 @@ const unknownEndpoint = (request, response) => {
 };
 
 // to get them as json
-// Note.find({ content: { $eq: "typescript" } }).then((e) =>
+// Phone.find({ name: { $eq: "typescript" } }).then((e) =>
 //   console.log(e[0].toJSON()),
 // );
 //
 app.get("/api/notes", (req, res) => {
-  Note.find().then((e) => res.json(e));
+  Phone.find().then((e) => res.json(e));
 });
 
-// Note.deleteMany({ content: { $eq: "" } }).then((re) =>
+// Phone.deleteMany({ name: { $eq: "" } }).then((re) =>
 //   console.log("detlet", re),
 // );
 app.post("/api/notes", async (req, res, next) => {
   const data = req.body;
 
-  if (!data.content) {
+  if (!data.name) {
     console.log("error");
 
-    return res.status(400).json({ error: "content missing" });
+    return res.status(400).json({ error: "name missing" });
   }
 
-  const z = await Note.find({ content: data.content });
+  const z = await Phone.find({ name: data.name });
 
   if (z.length !== 0) {
-    const err = new Error("The note is already in the database");
+    const err = new Error("The number is already in the database");
     err.name = "Conflict";
     err.status = 409;
     return next(err);
   }
 
-  const note = new Note({
+  const phone = new Phone({
     important: data.important || false,
-    content: data.content,
+    number: data.number,
+    name: data.name,
   });
 
-  note
+  phone
     .save()
     .then((sav) => res.json(sav))
     .catch((err) => next(err));
 });
 
 app.get("/api/notes/:id", (req, res, next) => {
-  Note.findById(req.params.id)
+  Phone.findById(req.params.id)
     .then((item) => (item ? res.json(item) : res.status(404).end()))
     .catch((err) => next(err));
 });
 
 app.delete("/api/notes/:id", (req, res, next) => {
-  Note.findByIdAndDelete(req.params.id)
+  Phone.findByIdAndDelete(req.params.id)
     .then((back) => res.status(200).end())
     .catch((er) => next(er));
 });
 
 app.put("/api/notes/:id", (req, res, next) => {
-  const { content, important } = req.body;
+  const { name, important, number } = req.body;
 
-  Note.findByIdAndUpdate(
+  Phone.findByIdAndUpdate(
     req.params.id,
-    { content, important },
+    { name, important, number },
     { new: true, runValidators: true, context: "query" },
   )
     .then((up) => res.json(up))
