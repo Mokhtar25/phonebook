@@ -19,12 +19,30 @@ mongoose
 const phoneSchema = new mongoose.Schema({
   name: {
     type: String,
-    minLength: 5,
+    minLength: 2,
     required: true,
   },
   number: {
-    type: Number,
-    minLength: 8,
+    type: String,
+
+    validate: {
+      validator: function val(p) {
+        try {
+          let [x, y] = p.split("-");
+          if (x.toString().length > 3 || x.toString().length === 0) {
+            return false;
+          }
+          if (y.toString().length < 2) {
+            return false;
+          }
+        } catch (err) {
+          return false;
+        }
+        return true;
+      },
+
+      message: (props) => `${props.value} is not a valid phone number!`,
+    },
     required: true,
   },
   important: Boolean,
